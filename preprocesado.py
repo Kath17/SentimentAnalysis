@@ -1,6 +1,8 @@
 import csv
 import re
 stopWords = []
+
+
 def processTweet(tweet):
 	tweet = tweet.lower()
 	tweet = re.sub('((www\.[^\s]+)|(https?://[^\s]+))','URL',tweet)
