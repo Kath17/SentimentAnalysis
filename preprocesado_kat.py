@@ -2,10 +2,9 @@ import csv
 import re
 
 from sklearn import svm   #SVM algorithm
+from sklearn.naive_bayes import GaussianNB                  #Naive Bayes
 from sklearn.feature_extraction.text import TfidfVectorizer #TF IDF
 from sklearn.feature_extraction.text import CountVectorizer #Bag of words
-from sklearn.naive_bayes import GaussianNB                  #Naive Bayes
-
 
 stopWords = []
 def processTweet(tweet):
@@ -17,12 +16,12 @@ def processTweet(tweet):
 	tweet = tweet.strip('\'"')
 	return tweet
 
-
 def readFile(fp,file): 
 	    reader = csv.reader(file)
 	    for (label, tweet) in reader:
 	    	if label != None:
 	    		fp.write(label+' '+processTweet(tweet)+'\n')
+
 #-----------------------------------------------------------
 def getStopWordList(fileName):
 	stopWords = []
@@ -74,21 +73,24 @@ with open('example.csv','r',newline='') as Rfile:
 
 # ------------------------- BAG OF WORDS ----------------------#
 
-print("Vector caracteristico")
+print("Creando vectores característicos: ")
 
-corpus = []
-labels = []
+def Read_File(nombre_archivo):
+        corpus = []
+        labels = []
+        with open(nombre_archivo) as csvfile:
+            readCSV = csv.reader(csvfile, delimiter=',')
+            for row in readCSV:
+                tweet = row[1]
+                label = row[0]
+                corpus.append(tweet)
+                labels.append(label)
+        return (corpus, labels)
 
-with open('example1.csv') as csvfile:
-    readCSV = csv.reader(csvfile, delimiter=',')
-    for row in readCSV:
-        tweet = row[1]
-        label = row[0]
-        corpus.append(tweet)
-        labels.append(label)
-
-    print(corpus)
-
+# ---------------------- Read File () : Devuelve el corpus, y los labels ------------------- #
+(corpus, labels) = Open_File('example1.csv')
+print(corpus)
+print(labels)
 
 
 ############# BAG OF WORDS #############
@@ -99,7 +101,6 @@ bag = X.toarray()
 
 print("Bag of words de entrenamiento:")
 print(bag)
-print(labels)
 
 
 
