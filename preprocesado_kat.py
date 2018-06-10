@@ -2,7 +2,9 @@ import csv
 import re
 
 from sklearn import svm   #SVM algorithm
+from sklearn.feature_extraction.text import TfidfVectorizer #TF IDF
 from sklearn.feature_extraction.text import CountVectorizer #Bag of words
+from sklearn.naive_bayes import GaussianNB                  #Naive Bayes
 
 
 stopWords = []
@@ -56,14 +58,13 @@ def getFeatureVector(tw):
 
 
 #--------------------Preprocess-----------------------------
-stopWords = getStopWordList('datasets/stopwords.txt')
-with open('datasets/example.csv','r',newline='') as Rfile: 
+stopWords = getStopWordList('stopwords.txt')
+with open('example.csv','r',newline='') as Rfile: 
 #example.csv archivo con los tweets
-	with open('datasets/example1.csv', 'w',newline='') as Wfile:
+	with open('example1.csv', 'w',newline='') as Wfile:
 	#example1.csv archivo donde se guardan los tweet sin  url y stopwords
 		reader = csv.reader(Rfile)
 		writer = csv.writer(Wfile)
-		print("aqui pasa algo")
 		for (label, tweet) in reader:
 			processedTweet = processTweet(tweet)
 			featureVector = getFeatureVector(processedTweet)
@@ -78,7 +79,7 @@ print("Vector caracteristico")
 corpus = []
 labels = []
 
-with open('datasets/example1.csv') as csvfile:
+with open('example1.csv') as csvfile:
     readCSV = csv.reader(csvfile, delimiter=',')
     for row in readCSV:
         tweet = row[1]
@@ -88,6 +89,10 @@ with open('datasets/example1.csv') as csvfile:
 
     print(corpus)
 
+
+
+############# BAG OF WORDS #############
+
 vectorizer = CountVectorizer()
 X = vectorizer.fit_transform(corpus)
 bag = X.toarray()
@@ -96,20 +101,32 @@ print("Bag of words de entrenamiento:")
 print(bag)
 print(labels)
 
-# ------------------------------------- SVM ----------------------------------------#
-clf = svm.SVC()
-clf.fit(bag, labels)
 
-#############
 
+################ TF IDF ################
+
+TF_IDF = TfidfVectorizer(min_df=1)
+sklearn_representation = TF_IDF.fit_transform(corpus)
+tfidf = sklearn_representation.toarray()
+
+print("TF_IDF de entrenamiento:")
+print(tfidf)
+print(labels)
+
+
+# ---------------- VARIABLES ------------------- #
 positivos = []
 negativos = []
 Vector_pos = []
 Vector_neg = []
+
+# --------------------
 bag_Pos= []
 bag_Neg= []
 
-with open('datasets/positivos.csv') as csvfile:
+
+
+with open('positivos.csv') as csvfile:
     readCSV = csv.reader(csvfile, delimiter=',')
     for row in readCSV:
         pos = row[0]
@@ -119,7 +136,11 @@ with open('datasets/positivos.csv') as csvfile:
         featureVector = getFeatureVector(processedTweet)
         Vector_pos.append(" ".join(featureVector))
         frase = " ".join(featureVector)
-        bag_Pos.extend(vectorizer.transform([frase]).toarray())
+
+        #---------------- BoW
+        #bag_Pos.extend(vectorizer.transform([frase]).toarray())
+        #---------------- Tf Idf
+        bag_Pos.extend(TF_IDF.transform([frase]).toarray())
 
     print("Vector de positivos:")
     print(positivos)
@@ -132,7 +153,7 @@ print(bag_Pos)
 
 
 
-with open('datasets/negativos.csv') as csvfile:
+with open('negativos.csv') as csvfile:
     readCSV = csv.reader(csvfile, delimiter=',')
     for row in readCSV:
         neg = row[0]
@@ -142,7 +163,11 @@ with open('datasets/negativos.csv') as csvfile:
         featureVector = getFeatureVector(processedTweet)
         Vector_neg.append(" ".join(featureVector))
         frase = " ".join(featureVector)
-        bag_Neg.extend(vectorizer.transform([frase]).toarray())
+
+        #---------------- BoW
+        #bag_Neg.extend(vectorizer.transform([frase]).toarray())
+        #---------------- Tf Idf
+        bag_Neg.extend(TF_IDF.transform([frase]).toarray())
 
     print("Vector de negativos:")
     print(negativos)
@@ -150,11 +175,15 @@ with open('datasets/negativos.csv') as csvfile:
     print(Vector_neg)
 
 # ----------------- vector of neg ---------#
-
 print(bag_Neg)
 
 
+"""
 # ------------------ Predict -----------------#
+
+# ------------------------------------- SVM ----------------------------------------#
+clf = svm.SVC()
+clf.fit(bag, labels)
 
 print("Negativos 0 - Positivos 1")
 
@@ -165,4 +194,44 @@ print("predict positivos")
 print(clf.predict(bag_Pos))
 
 
+# ------------------------------------ NAIVE BAYES ----------------------------------#
+NB = GaussianNB()
+NB.fit(bag, labels)
+
+print("Negativos 0 - Positivos 1")
+
+print("predict negativos")
+print(NB.predict(bag_Neg))
+
+print("predict positivos")
+print(NB.predict(bag_Pos))
+"""
+
+
+# ------------------ Predict with TF IDF -----------------#
+
+# ------------------------------------- SVM ----------------------------------------#
+clf = svm.SVC()
+clf.fit(tfidf, labels)
+
+print("Negativos 0 - Positivos 1")
+
+print("predict negativos")
+print(clf.predict(bag_Neg))
+
+print("predict positivos")
+print(clf.predict(bag_Pos))
+
+
+# ------------------------------------ NAIVE BAYES ----------------------------------#
+NB = GaussianNB()
+NB.fit(tfidf, labels)
+
+print("Negativos 0 - Positivos 1")
+
+print("predict negativos")
+print(NB.predict(bag_Neg))
+
+print("predict positivos")
+print(NB.predict(bag_Pos))
 
