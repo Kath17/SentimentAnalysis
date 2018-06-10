@@ -53,10 +53,10 @@ def getFeatureVector(tw):
 
 
 #--------------------Preprocess-----------------------------
-stopWords = getStopWordList('datasets/stopwords.txt')
-with open('datasets/example.csv','r',newline='') as Rfile: 
+stopWords = getStopWordList('stopwords.txt')
+with open('example.csv','r',newline='') as Rfile: 
 #example.csv archivo con los tweets
-	with open('datasets/example1.csv', 'w',newline='') as Wfile:
+	with open('example1.csv', 'w',newline='') as Wfile:
 	#example1.csv archivo donde se guardan los tweet sin  url y stopwords
 		reader = csv.reader(Rfile)
 		writer = csv.writer(Wfile)
