@@ -42,6 +42,8 @@ def TwoOrMoreWords(s):#--->?
 		
 def getFeatureVector(tw):
 	featureVector = []
+	if(len(tw) == 0):
+		return featureVector
 	label = tw.split()[0]
 	words = tw.split()[1:]
 	for w in words:
@@ -235,4 +237,8 @@ print(NB.predict(bag_Neg))
 
 print("predict positivos")
 print(NB.predict(bag_Pos))
+
+
+
+
 

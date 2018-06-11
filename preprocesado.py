@@ -1,8 +1,7 @@
 import csv
 import re
+import nltk
 stopWords = []
-
-
 def processTweet(tweet):
 	tweet = tweet.lower()
 	tweet = re.sub('((www\.[^\s]+)|(https?://[^\s]+))','URL',tweet)
@@ -38,11 +37,13 @@ def TwoOrMoreWords(s):#--->?
 		
 def getFeatureVector(tw):
 	featureVector = []
+	if(len(tw) == 0):
+		return featureVector
 	label = tw.split()[0]
 	words = tw.split()[1:]
 	for w in words:
-		w = TwoOrMoreWords(w)
-		w = w.strip('\'"?,.')
+		w = TwoOrMoreWords(w) #paabras repetidas
+		w = w.strip('\'"?,.') #removiendo signos
 		val = re.search(r"^[a-zA-Z][a-zA-Z0-9]*$", w)
 		if(w in stopWords or val is None):
 			continue
@@ -50,20 +51,44 @@ def getFeatureVector(tw):
 			featureVector.append(w.lower())
 	return featureVector
 
+def print_vector(vector):
+	for line in vector:
+		print(line)
+		#print("\n")
+
+def extractFeature(tweet):
+	tweetWord= set(tweets)
+	features = {}
+	for word in featureList:
+		feature['contains(%s)' % word] = (word in tweetWord)
+	return features
 
 
 #--------------------Preprocess-----------------------------
-stopWords = getStopWordList('stopwords.txt')
-with open('example.csv','r',newline='') as Rfile: 
+stopWords = getStopWordList('datasets/stopwords.txt')
+with open('datasets/aerolineas.csv','r',newline='') as Rfile: 
 #example.csv archivo con los tweets
-	with open('example1.csv', 'w',newline='') as Wfile:
+	with open('datasets/example1.csv', 'w',newline='') as Wfile:
 	#example1.csv archivo donde se guardan los tweet sin  url y stopwords
+		featureList = []
+		tweets = []
 		reader = csv.reader(Rfile)
 		writer = csv.writer(Wfile)
-		for (label, tweet) in reader:
+		for (sentiment, tweet) in reader:
 			processedTweet = processTweet(tweet)
 			featureVector = getFeatureVector(processedTweet)
-			if len(featureVector)!= 0:
-				writer.writerow([label]+[' '.join(featureVector)])
+			if len(featureVector) > 3:
+				writer.writerow([sentiment]+[' '.join(featureVector)])
+				featureList.extend(featureVector)
+				tweets.append((sentiment,featureVector))
+		
+
+		##print_vector(tweets)
+		##print("\n")
+		##print(featureList)
+		featureList = list(set(featureList))
+		##print("\n")
+		#print(featureList)
+		#trainingSet=nltk.classify.util.apply_feature(extractFeature,tweets)
 
 
