@@ -65,11 +65,11 @@ def Get_Vector(nombre_archivo, To_transform):
                 #lista_vectores.append(" ".join(tweet))
                 frase = "".join(tweet)
 
-                print(frase)
+                #print(frase)
                 #transformar de acuerdo a la tecnica elegida
                 vectoresCarac.extend(To_transform.transform([frase]).toarray())
 
-        print(vectoresCarac)
+        print(vectoresCarac[0])
         return vectoresCarac
 
 # --------------------------------- Usar algoritmo ---------------------------#
@@ -78,17 +78,21 @@ def Use_Algorithm( algoritmo , bag, labels, to_predict):
         print("Negativos 0 - Positivos 1")
         if(algoritmo == "svm" ):
                 print("Usando el SVM")
-                #clf = svm.SVC(decision_function_shape='ovo')
-                clf = svm.SVC()
+                clf = svm.SVC(decision_function_shape='ovo')
+                #clf = svm.SVC()
                 clf.fit(bag, labels)
                 resultado = clf.predict(to_predict)
-                print(resultado)
+                for i in range(0,50):
+                        print(resultado[i])
+                #print(resultado)
         elif ( algoritmo == "nb" ):
                 print("Usando el Naive Bayes")
                 NB = GaussianNB()
                 NB.fit(bag, labels)
                 resultado = NB.predict(to_predict)
-                print(resultado)
+                for i in range(0,50):
+                        print(resultado[i])
+                #print(resultado)
         else:
                 print("Algoritmo no soportado")
 
@@ -98,7 +102,7 @@ def Use_Algorithm( algoritmo , bag, labels, to_predict):
 
 # ---------------- Read File (Archivo preprocesado) --------------- #
 
-(corpus, labels) = Read_File('example1.csv')
+(corpus, labels) = Read_File('dataTraining.csv')
 #print(corpus)
 #print(labels)
 
@@ -111,7 +115,7 @@ print("\nBag of words de entrenamiento:")
 print(bag[0])
 
 # ----------------- Vectores caracteristicos de prueba positivos ---------#
-bag_Pos = Get_Vector('negativos.csv',vectorizer)
+bag_Pos = Get_Vector('dataTrainingProbar.csv',vectorizer)
 print("\nBolsa de palabras positivas")
 #print(bag_Pos)
 
