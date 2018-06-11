@@ -73,7 +73,9 @@ with open('example.csv','r',newline='') as Rfile:
 				writer.writerow([label]+[' '.join(featureVector)])
 
 
-# ------------------------- BAG OF WORDS ----------------------#
+# ----------------------------------------------------------------------------------------------------#
+
+# ---------------- Read File (Archivo preprocesado) : Devuelve el corpus, y los labels --------------- #
 
 print("Creando vectores característicos: ")
 
@@ -89,126 +91,128 @@ def Read_File(nombre_archivo):
                 labels.append(label)
         return (corpus, labels)
 
-# ---------------------- Read File () : Devuelve el corpus, y los labels ------------------- #
-(corpus, labels) = Open_File('example1.csv')
+
+# ------------------------------ BAG OF WORDS -----------------------------#
+# Creamos un bag of words del corpus, se guarda en la variable bag (lista de listas)   //  bow
+
+#---------------------------------- TF IDF --------------------------------#
+# Usamos TF IDF para crear los vectores caracteristicos del corpus     //  tfidf
+
+def TecnicaParaVector( tecnica,corpus ):
+        if(tecnica == "bow"):
+                vectorizer = CountVectorizer()
+                X = vectorizer.fit_transform(corpus)
+                bag = X.toarray()
+                return (vectorizer,bag)
+        elif(tecnica == "tfidf"):
+                TF_IDF = TfidfVectorizer(min_df=1)
+                sklearn_representation = TF_IDF.fit_transform(corpus)
+                tfidf = sklearn_representation.toarray()
+                return (TF_IDF, tfidf)
+
+
+# ------------------------------- Get Vector -----------------------------#
+# Preprocesa los datos para probar y retorna el vector caracteristico de los datos de prueba
+# To_transform = tf idf or BoW
+
+def Get_Vector(nombre_archivo, To_transform):
+        vectoresCarac = []
+        lista_vectores = []
+
+        print("\nTweets preprocesados para probar:\n")
+        
+        with open(nombre_archivo) as csvfile:
+            readCSV = csv.reader(csvfile, delimiter=',')
+            for row in readCSV:
+                tweet = row[0]
+                lista_vectores.append(tweet)
+
+                processedTweet = processTweet(tweet)
+                featureVector = getFeatureVector(processedTweet)
+
+                lista_vectores.append(" ".join(featureVector))
+                frase = " ".join(featureVector)
+
+                print(frase)
+                #transformar de acuerdo a la tecnica elegida
+                vectoresCarac.extend(To_transform.transform([frase]).toarray())
+        
+        return vectoresCarac
+
+# --------------------------------- Usar algoritmo ---------------------------#
+
+def Use_Algorithm( algoritmo , bag, labels, to_predict):
+        print("Negativos 0 - Positivos 1")
+        if(algoritmo == "svm" ):
+                print("Usando el SVM")
+                clf = svm.SVC()
+                clf.fit(bag, labels)
+                print(clf.predict(to_predict))
+        elif ( algoritmo == "nb" ):
+                print("Usando el Naive Bayes")
+                NB = GaussianNB()
+                NB.fit(bag, labels)
+                print(NB.predict(to_predict))
+        else:
+                print("Algoritmo no soportado")
+
+
+
+######################################## MAIN #######################################
+
+# ---------------- Read File (Archivo preprocesado) --------------- #
+
+(corpus, labels) = Read_File('example1.csv')
 print(corpus)
 print(labels)
 
 
-############# BAG OF WORDS #############
+# ------------------------- Tecnica para vectores ----------------------#
+#vectorizer depende de la tecnica requerida
 
-vectorizer = CountVectorizer()
-X = vectorizer.fit_transform(corpus)
-bag = X.toarray()
+(vectorizer, bag) = TecnicaParaVector("bow",corpus)
+print("\nBag of words de entrenamiento:")
+print(bag[0])
 
-print("Bag of words de entrenamiento:")
-print(bag)
-
-
-
-################ TF IDF ################
-
-TF_IDF = TfidfVectorizer(min_df=1)
-sklearn_representation = TF_IDF.fit_transform(corpus)
-tfidf = sklearn_representation.toarray()
-
-print("TF_IDF de entrenamiento:")
-print(tfidf)
-print(labels)
-
-
-# ---------------- VARIABLES ------------------- #
-positivos = []
-negativos = []
-Vector_pos = []
-Vector_neg = []
-
-# --------------------
-bag_Pos= []
-bag_Neg= []
-
-
-
-with open('positivos.csv') as csvfile:
-    readCSV = csv.reader(csvfile, delimiter=',')
-    for row in readCSV:
-        pos = row[0]
-        positivos.append(pos)
-
-        processedTweet = processTweet(pos)
-        featureVector = getFeatureVector(processedTweet)
-        Vector_pos.append(" ".join(featureVector))
-        frase = " ".join(featureVector)
-
-        #---------------- BoW
-        #bag_Pos.extend(vectorizer.transform([frase]).toarray())
-        #---------------- Tf Idf
-        bag_Pos.extend(TF_IDF.transform([frase]).toarray())
-
-    print("Vector de positivos:")
-    print(positivos)
-    print("Vector de feature vectors:")
-    print(Vector_pos)
-
-# ----------------- vector of pos ---------#
+# ----------------- Vectores caracteristicos de prueba positivos ---------#
+bag_Pos = Get_Vector('positivos.csv',vectorizer)
+print("\nBolsa de palabras positivas")
 print(bag_Pos)
 
-
-
-
-with open('negativos.csv') as csvfile:
-    readCSV = csv.reader(csvfile, delimiter=',')
-    for row in readCSV:
-        neg = row[0]
-        negativos.append(neg)
-
-        processedTweet = processTweet(neg)
-        featureVector = getFeatureVector(processedTweet)
-        Vector_neg.append(" ".join(featureVector))
-        frase = " ".join(featureVector)
-
-        #---------------- BoW
-        #bag_Neg.extend(vectorizer.transform([frase]).toarray())
-        #---------------- Tf Idf
-        bag_Neg.extend(TF_IDF.transform([frase]).toarray())
-
-    print("Vector de negativos:")
-    print(negativos)
-    print("Vector de feature vectors:")
-    print(Vector_neg)
-
-# ----------------- vector of neg ---------#
+# ----------------- Vectores caracteristicos de prueba negativos ---------#
+bag_Neg = Get_Vector('negativos.csv',vectorizer)
+print("\nBolsa de palabras negativas")
 print(bag_Neg)
 
 
+# ------------------ Predict with Bag of Words -----------------#
+
+# ------------------- SVM -----------------#
+print("Probando negativos")
+Use_Algorithm("svm", bag, labels, bag_Neg)
+print("Probando positivos")
+Use_Algorithm("svm", bag, labels, bag_Pos)
+
+# ------------------- Naive Bayes -----------------#
+print("Probando negativos")
+Use_Algorithm("nb", bag, labels, bag_Neg)
+print("Probando positivos")
+Use_Algorithm("nb", bag, labels, bag_Pos)
+
+
 """
-# ------------------ Predict -----------------#
+# ------------------------- TF IDF ----------------------#
+(TF_IDF, tfidf) = To_TfIdf()
+print("TF_IDF de entrenamiento:")
+print(tfidf)
 
-# ------------------------------------- SVM ----------------------------------------#
-clf = svm.SVC()
-clf.fit(bag, labels)
+# ----------------- Vectores caracteristicos de prueba positivos ---------#
+bag_Pos = Get_Vector('positivos.csv','t',TF_IDF)
+print(bag_Pos)
 
-print("Negativos 0 - Positivos 1")
-
-print("predict negativos")
-print(clf.predict(bag_Neg))
-
-print("predict positivos")
-print(clf.predict(bag_Pos))
-
-
-# ------------------------------------ NAIVE BAYES ----------------------------------#
-NB = GaussianNB()
-NB.fit(bag, labels)
-
-print("Negativos 0 - Positivos 1")
-
-print("predict negativos")
-print(NB.predict(bag_Neg))
-
-print("predict positivos")
-print(NB.predict(bag_Pos))
-"""
+# ----------------- Vectores caracteristicos de prueba negativos ---------#
+bag_Neg = Get_Vector('negativos.csv','t',TF_IDF)
+print(bag_Neg)
 
 
 # ------------------ Predict with TF IDF -----------------#
@@ -237,8 +241,4 @@ print(NB.predict(bag_Neg))
 
 print("predict positivos")
 print(NB.predict(bag_Pos))
-
-
-
-
-
+"""
