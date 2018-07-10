@@ -2,6 +2,7 @@ import csv
 import re
 import nltk
 stopWords = []
+
 def processTweet(tweet):
 	tweet = tweet.lower()
 	tweet = re.sub('((www\.[^\s]+)|(https?://[^\s]+))','URL',tweet)
@@ -12,7 +13,7 @@ def processTweet(tweet):
 	return tweet
 
 
-def readFile(fp,file): 
+def readFile(fp,file):
 	    reader = csv.reader(file)
 	    for (label, tweet) in reader:
 	    	if label != None:
@@ -34,13 +35,13 @@ def getStopWordList(fileName):
 def TwoOrMoreWords(s):#--->?
 	pattern = re.compile(r"(.)\1{1,}", re.DOTALL)
 	return pattern.sub(r"\1\1",s)
-		
+
 def getFeatureVector(tw):
 	featureVector = []
 	if(len(tw) == 0):
 		return featureVector
 	label = tw.split()[0]
-	words = tw.split()[1:]
+	words = tw.split()[0:]
 	for w in words:
 		w = TwoOrMoreWords(w) #paabras repetidas
 		w = w.strip('\'"?,.') #removiendo signos
@@ -65,23 +66,28 @@ def extractFeature(tweet):
 
 
 #--------------------Preprocess-----------------------------
-stopWords = getStopWordList('datasets/stopwords.txt')
-with open('datasets/aerolineas.csv','r',newline='') as Rfile: 
-#example.csv archivo con los tweets
-	with open('datasets/example1.csv', 'w',newline='') as Wfile:
-	#example1.csv archivo donde se guardan los tweet sin  url y stopwords
-		featureList = []
-		tweets = []
-		reader = csv.reader(Rfile)
-		writer = csv.writer(Wfile)
-		for (sentiment, tweet) in reader:
-			processedTweet = processTweet(tweet)
-			featureVector = getFeatureVector(processedTweet)
-			if len(featureVector) > 3:
-				writer.writerow([sentiment]+[' '.join(featureVector)])
-				featureList.extend(featureVector)
-				tweets.append((sentiment,featureVector))
-		
+# Ingles
+# stopWords = getStopWordList('datasets/stopwords.txt')
+
+#Español
+stopWords = getStopWordList('stop_words_español.txt')
+
+def Preprocesar(nombre):
+	with open('datasets/'+nombre,'r',newline='') as Rfile:
+	#example.csv archivo con los tweets
+		with open('Pre/'+nombre, 'w',newline='') as Wfile:
+		#example1.csv archivo donde se guardan los tweet sin  url y stopwords
+			featureList = []
+			tweets = []
+			reader = csv.reader(Rfile)
+			writer = csv.writer(Wfile)
+			for (sentiment, tweet) in reader:
+				processedTweet = processTweet(tweet)
+				featureVector = getFeatureVector(processedTweet)
+				if len(featureVector) > 3:
+					writer.writerow([sentiment]+[' '.join(featureVector)])
+					featureList.extend(featureVector)
+					tweets.append((sentiment,featureVector))
 
 		##print_vector(tweets)
 		##print("\n")
@@ -92,3 +98,4 @@ with open('datasets/aerolineas.csv','r',newline='') as Rfile:
 		#trainingSet=nltk.classify.util.apply_feature(extractFeature,tweets)
 
 
+Preprocesar('CorpusCOAR.csv')

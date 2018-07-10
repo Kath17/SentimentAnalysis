@@ -1,0 +1,57 @@
+Para todas las BD estamos probando 60% para entrenar, 40% para probar
+
+En inglés:
+
+->Base de Datos: training.8000.csv (8000 datos) (0-Malo, 4-Bueno)
+  #Datos extraídos de la BD de 1.600.000 
+	BOW: 
+		-SVM: 0.6453
+		-Naive Bayes: 0.5556
+		-Random Forest Classifier: 0.653
+	TF IDF:
+		-SVM: 0.6553
+		-Naive Bayes: 0.56
+		-Ranfom Forest Classifier: 0.6381
+
+->Base de Datos: dataTraining.csv (4200 datos) (Positivo, Negativo, Neutral)
+	BOW: 
+		-SVM: 0.62857
+		-Naive Bayes: 0.51964
+		-Random Forest Classifier: 0.63454
+	TF IDF:
+		-SVM: 0.66369
+		-Naive Bayes: 0.51428
+		-Ranfom Forest Classifier: 0.6238
+
+#Otras BD que probé
+->BD_Sentiment.csv (Negative, Positive) (10233 datos)
+	BOW: 
+		-SVM: 0.8236
+		-Naive Bayes: 0.7032
+		-Random Forest Classifier: 0.83829
+	TF IDF:
+		-SVM: 0.8517
+		-Naive Bayes: 0.7027
+		-Ranfom Forest Classifier: 0.833659
+
+->BD_PosNeg.csv (Pos, neg) (9735 datos)
+	BOW: 
+		-SVM: 0.69748
+		-Naive Bayes: 0.65819
+		-Random Forest Classifier: 0.67385
+	TF IDF:
+		-SVM: 0.726245
+		-Naive Bayes: 0.6420
+		-Ranfom Forest Classifier: 0.654083
+
+En español:
+
+-> Base de Datos: CorpusCOAR.csv (2202 datos)  (Positivo-Negativo)
+	BOW: 
+		-Naive Bayes: 0.7798
+		-SVM: 0.85244
+		-Random Forest Classifier: 0.82065
+	TF IDF:
+		-Naive Bayes: 0.76163
+		-SVM: 0.8785
+		-Ranfom Forest Classifier: 0.79341

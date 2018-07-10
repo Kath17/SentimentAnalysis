@@ -4,6 +4,9 @@ from sklearn import svm   #SVM algorithm
 from sklearn.naive_bayes import GaussianNB                  #Naive Bayes
 from sklearn.feature_extraction.text import TfidfVectorizer #TF IDF
 from sklearn.feature_extraction.text import CountVectorizer #Bag of words
+from sklearn.ensemble import RandomForestClassifier    # Random Forest Classifier
+#import shorttext
+#from shorttext.classifiers import MaxEntClassifier   #Maximum Entropy Model Classifier
 
 # ----------------------------------------------------------------------------------------------------#
 
@@ -72,7 +75,7 @@ def Get_Vector(nombre_archivo, To_transform):
         lista_labels = []
 
         print("\nTweets preprocesados para probar:\n")
-        
+
         with open(nombre_archivo) as csvfile:
             readCSV = csv.reader(csvfile, delimiter=',')
             for row in readCSV:
@@ -101,33 +104,56 @@ def Use_Algorithm( algoritmo , bag, labels_e, to_predict, labels_prueba):
         #print("Negativos 0 - Positivos 1")
         acierto_svm = 0
         acierto_nb = 0
+        acierto_rfc = 0
+        acierto_mem = 0
         total = 0
-        
+
         if(algoritmo == "svm" ):
-                #C = 1.0
-                print("Usando el SVM")
-                #clf = svm.SVC(decision_function_shape='ovo')
-                clf = svm.SVC(kernel='linear')
-                clf.fit(bag, labels_e)
-                resultado = clf.predict(to_predict)
-                for i in resultado:
-                        if(str(i) == str(labels_prueba[total])):
-                                acierto_svm = acierto_svm +1
-                        total = total + 1
-                        #print(resultado[i])
-                #print(resultado)
-                return (acierto_svm/total)
+            #C = 1.0
+            print("Usando el SVM")
+            #clf = svm.SVC(decision_function_shape='ovo')
+            clf = svm.SVC(kernel='linear')
+            clf.fit(bag, labels_e)
+            resultado = clf.predict(to_predict)
+            for i in resultado:
+                if(str(i) == str(labels_prueba[total])):
+                        acierto_svm = acierto_svm +1
+                total = total + 1
+                #print(resultado[i])
+            #print(resultado)
+            return (acierto_svm/total)
         elif ( algoritmo == "nb" ):
-                print("Usando el Naive Bayes")
-                NB = GaussianNB()
-                NB.fit(bag, labels_e)
-                resultado = NB.predict(to_predict)
-                for i in resultado:
-                        if(str(i) == str(labels_prueba[total])):
-                                acierto_nb = acierto_nb + 1
-                        total = total + 1
-                #print(resultado)
-                return (acierto_nb/total)
+            print("Usando el Naive Bayes")
+            NB = GaussianNB()
+            NB.fit(bag, labels_e)
+            resultado = NB.predict(to_predict)
+            for i in resultado:
+                if(str(i) == str(labels_prueba[total])):
+                        acierto_nb = acierto_nb + 1
+                total = total + 1
+            #print(resultado)
+            return (acierto_nb/total)
+        elif (algoritmo == "rfc"):
+            print("Usando Random Forest Classifier")
+            RFC = RandomForestClassifier(n_estimators=10)
+            RFC.fit(bag, labels_e)
+            resultado = RFC.predict(to_predict)
+            for i in resultado:
+                if(str(i) == str(labels_prueba[total])):
+                        acierto_rfc = acierto_rfc + 1
+                total = total + 1
+            return (acierto_rfc/total)
+        elif (algoritmo == "mem"):
+            print("Usando Maximum Entropy Model")
+            MEM = MaxEntClassifier()
+            MEM.fit(bag,labels_e)
+            resultado = MEM.predict(to_predict)
+            for i in resultado:
+                if(str(i) == str(labels_prueba[total])):
+                        acierto_mem = acierto_mem + 1
+                total = total + 1
+            return (acierto_mem/total)
+
         else:
                 print("Algoritmo no soportado")
         return 0
@@ -136,8 +162,11 @@ def Use_Algorithm( algoritmo , bag, labels_e, to_predict, labels_prueba):
 ######################################## MAIN #######################################
 
 # ----------------------- Separar datos en dos archivos --------------------#
-(archivo_entrenar , archivo_probar) = Separar('dataTraining.csv',80,4200)
-# training.8000.csv # dataTraining.csv 4200
+#(archivo_entrenar , archivo_probar) = Separar('CorpusCOAR.csv',60,2202)
+#(archivo_entrenar , archivo_probar) = Separar('training.8000.csv',60,8000)
+#(archivo_entrenar , archivo_probar) = Separar('dataTraining.csv',60,4200)
+# (archivo_entrenar , archivo_probar) = Separar('_BD_PosNeg.csv',60,9735)
+(archivo_entrenar , archivo_probar) = Separar('_BD_Sentiment.csv',60,10233)
 print((archivo_entrenar , archivo_probar))
 
 # ---------------- Read File (Archivo preprocesado) --------------- #
@@ -194,6 +223,26 @@ print("\nProbando con datos tfidf")
 acierto_tfidf_nb = Use_Algorithm("nb", bag_tfidf, labels_entrenamiento, datos_probar_tfidf , lista_labels_tfidf)
 print("Acierto de tfidf en NB:", acierto_tfidf_nb )
 
+# ------------------- Random Forest Classifier -----------------#
+#Use_Algorithm("rfc", bag, labels, bag_Neg)
+print("\nProbando con datos de prueba en el Random Forest Classifier")
+print("\nProbando con datos bow")
+acierto_bow_rfc = Use_Algorithm("rfc", bag_bow, labels_entrenamiento, datos_probar_bow , lista_labels_bow)
+print("Acierto de bow en RFC:", acierto_bow_rfc )
 
+print("\nProbando con datos tfidf")
+acierto_tfidf_rfc = Use_Algorithm("rfc", bag_tfidf, labels_entrenamiento, datos_probar_tfidf , lista_labels_tfidf)
+print("Acierto de tfidf en RFC:", acierto_tfidf_rfc )
 
+"""
+# ------------------- Random Forest Classifier -----------------#
+#Use_Algorithm("rfc", bag, labels, bag_Neg)
+print("\nProbando con datos de prueba en el Random Forest Classifier")
+print("\nProbando con datos bow")
+acierto_bow_mem = Use_Algorithm("mem", bag_bow, labels_entrenamiento, datos_probar_bow , lista_labels_bow)
+print("Acierto de bow en RFC:", acierto_bow_rfc )
 
+print("\nProbando con datos tfidf")
+acierto_tfidf_mem = Use_Algorithm("mem", bag_tfidf, labels_entrenamiento, datos_probar_tfidf , lista_labels_tfidf)
+print("Acierto de tfidf en RFC:", acierto_tfidf_rfc )
+"""
